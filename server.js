@@ -22,10 +22,8 @@ mongoose
     console.log(error);
   });
 
-// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Routes for mug products
 app.get("/api/mugs", async (req, res) => {
   try {
     const mugs = await Product.find({ category: "mug" });
