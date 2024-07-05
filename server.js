@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 const Product = require("./models/productModel");
 const app = express();
 
@@ -21,8 +22,10 @@ mongoose
     console.log(error);
   });
 
+// Serve static files
+app.use(express.static(path.join(__dirname, "public")));
+
 // Routes for mug products
-// Get all mugs
 app.get("/api/mugs", async (req, res) => {
   try {
     const mugs = await Product.find({ category: "mug" });
@@ -32,7 +35,6 @@ app.get("/api/mugs", async (req, res) => {
   }
 });
 
-// Get a single mug
 app.get("/api/mugs/:id", async (req, res) => {
   try {
     const mug = await Product.findById(req.params.id);
@@ -43,7 +45,6 @@ app.get("/api/mugs/:id", async (req, res) => {
   }
 });
 
-// Create a mug
 app.post("/api/mugs", async (req, res) => {
   try {
     const mug = await Product.create(req.body);
@@ -53,7 +54,6 @@ app.post("/api/mugs", async (req, res) => {
   }
 });
 
-// Update a mug
 app.put("/api/mugs/:id", async (req, res) => {
   try {
     const mug = await Product.findByIdAndUpdate(req.params.id, req.body, {
@@ -66,7 +66,6 @@ app.put("/api/mugs/:id", async (req, res) => {
   }
 });
 
-// Delete a mug
 app.delete("/api/mugs/:id", async (req, res) => {
   try {
     const mug = await Product.findByIdAndDelete(req.params.id);

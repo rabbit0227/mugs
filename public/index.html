@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mug Store</title>
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mx-auto">
+      <h1 class="text-3xl font-bold my-4">Welcome to the Mug Store</h1>
+
+      <!-- Form to add a new mug -->
+      <form id="addMugForm" class="my-4">
+        <label for="name" class="block">Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="border border-gray-300 rounded-md px-2 py-1 mb-2"
+          required
+        />
+
+        <label for="quantity" class="block">Quantity:</label>
+        <input
+          type="number"
+          id="quantity"
+          name="quantity"
+          class="border border-gray-300 rounded-md px-2 py-1 mb-2"
+          required
+        />
+
+        <label for="price" class="block">Price:</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          class="border border-gray-300 rounded-md px-2 py-1 mb-2"
+        />
+
+        <label for="image" class="block">Image URL:</label>
+        <input
+          type="text"
+          id="image"
+          name="image"
+          class="border border-gray-300 rounded-md px-2 py-1 mb-2"
+        />
+
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          Add Mug
+        </button>
+      </form>
+
+      <!-- Display mugs -->
+      <div id="mugList" class="my-4"></div>
+    </div>
+
+    <!-- Your JavaScript to interact with server.js -->
+    <script>
+      // Function to fetch all mugs from server
+      async function fetchMugs() {
+        const response = await fetch("/api/mugs");
+        const mugs = await response.json();
+        const mugList = document.getElementById("mugList");
+        mugList.innerHTML = ""; // Clear previous list
+
+        mugs.forEach((mug) => {
+          const mugElement = document.createElement("div");
+          mugElement.className = "border border-gray-300 rounded-md p-2 mb-2";
+          mugElement.innerHTML = `
+                    <h2 class="font-bold">${mug.name}</h2>
+                    <p>Quantity: ${mug.quantity}</p>
+                    <p>Price: ${mug.price}</p>
+                    ${mug.image ? `<img src="${mug.image}" alt="${mug.name}" class="my-2">` : ""}
+                    <button onclick="deleteMug('${mug._id}')" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">Delete</button>
+                `;
+          mugList.appendChild(mugElement);
+        });
+      }
+
+      // Function to add a new mug
+      async function addMug(event) {
+        event.preventDefault();
+        const formData = new FormData(document.getElementById("addMugForm"));
+        const newMug = {};
+        formData.forEach((value, key) => {
+          newMug[key] = value;
+        });
+
+        const response = await fetch("/api/mugs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newMug),
+        });
+
+        if (response.ok) {
+          fetchMugs(); // Refresh mug list after adding
+          document.getElementById("addMugForm").reset(); // Clear form inputs
+        } else {
+          const errorMessage = await response.json();
+          alert(errorMessage.message);
+        }
+      }
+
+      // Function to delete a mug
+      async function deleteMug(mugId) {
+        const confirmDelete = confirm(
+          "Are you sure you want to delete this mug?"
+        );
+        if (confirmDelete) {
+          const response = await fetch(`/api/mugs/${mugId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            fetchMugs(); // Refresh mug list after deleting
+          } else {
+            const errorMessage = await response.json();
+            alert(errorMessage.message);
+          }
+        }
+      }
+
+      // Fetch mugs when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchMugs();
+
+        // Attach event listener to addMugForm
+        document
+          .getElementById("addMugForm")
+          .addEventListener("submit", addMug);
+      });
+    </script>
+  </body>
+</html>
